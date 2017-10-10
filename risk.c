@@ -9,6 +9,8 @@ int player_initiate(int num_players, player *competitor);
 int player_teardown (player *competitor, int num_players);
 int build_continents(continent *head);
 int build_territories(territory *head, int country);
+int free_graph(continent *cont_handle);
+
 
 int main(int argc, char *argv[])
 {
@@ -62,7 +64,8 @@ int main(int argc, char *argv[])
             
         globe = globe->next;
     }
-    
+
+    success = free_graph(globe);    
     //destroy player function
     success = player_teardown(competitor, num_players);
     return 0;
@@ -248,7 +251,28 @@ int build_territories(territory *head, int country){
     return 0;
 } 
  
-  
+int free_graph(continent *cont_node){
+
+    continent *cont_handle = cont_node;
+    territory *ter_handle;
+    for(int a = 0; a < 4; a++){
+        for(territory *b = cont_node->head; b != NULL; b = b->next){
+            ter_handle = b->next;
+            free(b);
+        }
+        if(a+1 < 4){
+            cont_handle = cont_node->next;
+            free(cont_node);
+            cont_node = cont_handle;
+        }
+        else{
+            free(cont_node);
+        }
+    }
+    return 0;
+}
+    
+   
     
 /*
 int randomize(long number);
