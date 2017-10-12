@@ -129,6 +129,7 @@ int player_teardown(player *competitor, int num_players)
 //Function to build out continents 
 int build_continents(continent *cont_node){
 
+    int ret;
 
     continent *temp = cont_node;
     for(int a = 0; a < 4; a++){
@@ -138,7 +139,7 @@ int build_continents(continent *cont_node){
         
         cont_node->head = malloc(sizeof(territory));
 
-        int ret = build_territories(cont_node->head, a);
+        ret = build_territories(cont_node->head, a);
 
         if((a + 1) < 4){
             cont_node->next = malloc(sizeof(*cont_node));
@@ -170,7 +171,6 @@ int build_territories(territory *head, int country){
     }
     
     for(int a = 0; a < count; a++){
-            //head->name = malloc(strlen(asia_array[a]));
             head->name = temp_array[country][a];
             head->color = "White";
             head->num_troops = 0;
@@ -184,85 +184,7 @@ int build_territories(territory *head, int country){
             }
     }
 
-    /*
-    if(country == 0){
-        
-        count = 5;
-
-        for(int a = 0; a < count; a++){
-            //head->name = malloc(strlen(africa_array[a]));
-            head->name = africa_array[a];
-            head->color = "White";
-            head->num_troops = 0;
-            if(a + 1 < count){
-                head->next = malloc(sizeof(*head));
-                head->previous = NULL;
-                head = head->next;
-            }
-            else{
-                head->next = NULL;
-            }
-        }
-
-    }
-
-    else if(country == 1){
-
-        
-        count = 4;
-        for(int a = 0; a < count; a++){
-            //head->name = malloc(strlen(europe_array[a]));
-            head->name = europe_array[a];
-            head->color = "White";
-            head->num_troops = 0;
-            if(a + 1 < count){
-                head->next = malloc(sizeof(*head));
-                head->previous = NULL;
-                head = head->next;
-            }
-            else{
-                head->next = NULL;
-            }
-        }
-    }
-    else if(country == 2){
-        
-        count = 5;
-        for(int a = 0; a < count; a++){
-            //head->name = malloc(strlen(north_array[a]));
-            head->name = north_array[a];
-            head->color = "White";
-            head->num_troops = 0;
-            if(a + 1 < count){
-                head->next = malloc(sizeof(*head));
-                head->previous = NULL;
-                head = head->next;
-            }
-            else{
-                head->next = NULL;
-            }
-        }
-    }
-    else{
-        count = 4;
-        for(int a = 0; a < count; a++){
-            //head->name = malloc(strlen(asia_array[a]));
-            head->name = asia_array[a];
-            head->color = "White";
-            head->num_troops = 0;
-            if(a + 1 < count){
-                head->next = malloc(sizeof(*head));
-                head->previous = NULL;
-                head = head->next;
-            }
-            else{
-                head->next = NULL;
-            }
-        }
-    }
-    */
-
-    return 0;
+        return 0;
 } 
  
 int free_graph(continent *cont_node){
@@ -286,7 +208,7 @@ int free_graph(continent *cont_node){
     return 0;
 }
     
-   
+//OLD GRAPH CODE   
     
 /*
 int randomize(long number);
