@@ -1,6 +1,15 @@
 #ifndef RISK_H
 #define RISK_H
 
+
+const char* continent_array[] = {"Africa", "Europe", "North America", "Asia"};
+
+const char* africa_array[] = {"Morroco", "South Africa", "Algeria", "Nigeria", "Ethiopia"};
+const char* europe_array[] = {"Germany", "France", "Italy", "United Kingdom"};
+const char* north_array[] = {"USA", "Canada", "Mexixo", "Cuba", "Dominican Republic"};
+const char* asia_array[] = {"China", "India", "Japan", "North Korea"};
+
+
 typedef struct players {
     char *color;
     int troops;
@@ -10,7 +19,7 @@ typedef struct players {
 }player;
 
 typedef struct continents {
-    char *name;
+    const char *name;
     char *color;
     int num_countries;
     int bonus;
@@ -20,7 +29,7 @@ typedef struct continents {
 }continent;
 
 typedef struct territories {
-    char *name;
+    const char *name;
     char *color;
     int num_troops;
     struct continents *home;

@@ -11,9 +11,9 @@ int build_continents(continent *head);
 int build_territories(territory *head, int country);
 int free_graph(continent *cont_handle);
 
-
 int main(int argc, char *argv[])
 {
+
     if(argc != 2) {
         fprintf(stderr, "%s <num players (2-4)> \n", argv[0]);
         return 1;
@@ -129,7 +129,6 @@ int player_teardown(player *competitor, int num_players)
 //Function to build out continents 
 int build_continents(continent *cont_node){
 
-    char continent_array[4][20] = {"Africa", "Europe", "North America", "Asia"};
 
     continent *temp = cont_node;
     for(int a = 0; a < 4; a++){
@@ -160,13 +159,13 @@ int build_continents(continent *cont_node){
 //Function to build out territories
 int build_territories(territory *head, int country){
 
-    char africa_array[5][20] = {"Morocco", "South Africa", "Algeria", "Nigeria", "Ethiopia"};
+   // char africa_array[5][20] = {"Morocco", "South Africa", "Algeria", "Nigeria", "Ethiopia"};
    
-    char europe_array[4][20] = {"Germany", "France", "Italy", "United Kingdom"};
+    //char europe_array[4][20] = {"Germany", "France", "Italy", "United Kingdom"};
 
-    char north_array[5][20] = {"USA", "Canada", "Mexixo", "Cuba", "Dominican Republic"};
+    //char north_array[5][20] = {"USA", "Canada", "Mexixo", "Cuba", "Dominican Republic"};
 
-    char asia_array[4][20] = {"China", "India", "Japan", "North Korea"};
+    //char asia_array[4][20] = {"China", "India", "Japan", "North Korea"};
 
     
     int count = 0;
