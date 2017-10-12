@@ -158,18 +158,33 @@ int build_continents(continent *cont_node){
 
 //Function to build out territories
 int build_territories(territory *head, int country){
-
-   // char africa_array[5][20] = {"Morocco", "South Africa", "Algeria", "Nigeria", "Ethiopia"};
-   
-    //char europe_array[4][20] = {"Germany", "France", "Italy", "United Kingdom"};
-
-    //char north_array[5][20] = {"USA", "Canada", "Mexixo", "Cuba", "Dominican Republic"};
-
-    //char asia_array[4][20] = {"China", "India", "Japan", "North Korea"};
-
     
     int count = 0;
+
     territory *temp = head;
+
+    if(country == 0 || country == 2){
+        count = 5;
+    }else{
+        count = 4;
+    }
+    
+    for(int a = 0; a < count; a++){
+            //head->name = malloc(strlen(asia_array[a]));
+            head->name = temp_array[country][a];
+            head->color = "White";
+            head->num_troops = 0;
+            if(a + 1 < count){
+                head->next = malloc(sizeof(*head));
+                head->previous = NULL;
+                head = head->next;
+            }
+            else{
+                head->next = NULL;
+            }
+    }
+
+    /*
     if(country == 0){
         
         count = 5;
@@ -245,7 +260,7 @@ int build_territories(territory *head, int country){
             }
         }
     }
-    
+    */
 
     return 0;
 } 

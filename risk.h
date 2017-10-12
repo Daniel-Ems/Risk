@@ -2,13 +2,14 @@
 #define RISK_H
 
 
-const char* continent_array[] = {"Africa", "Europe", "North America", "Asia"};
+const char *continent_array[] = {"Africa", "Europe", "North America", "Asia"};
 
-const char* africa_array[] = {"Morroco", "South Africa", "Algeria", "Nigeria", "Ethiopia"};
-const char* europe_array[] = {"Germany", "France", "Italy", "United Kingdom"};
-const char* north_array[] = {"USA", "Canada", "Mexixo", "Cuba", "Dominican Republic"};
-const char* asia_array[] = {"China", "India", "Japan", "North Korea"};
+const char *africa_array[5] = {"Morroco", "South Africa", "Algeria", "Nigeria", "Ethiopia"};
+const char *europe_array[4] = {"Germany", "France", "Italy", "United Kingdom"};
+const char *north_array[5] = {"USA", "Canada", "Mexixo", "Cuba", "Dominican Republic"};
+const char *asia_array[4] = {"China", "India", "Japan", "North Korea"};
 
+const char **temp_array[4] = {africa_array, europe_array, north_array, asia_array};
 
 typedef struct players {
     char *color;
