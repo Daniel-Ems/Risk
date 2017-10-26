@@ -1,22 +1,14 @@
 #ifndef RISK_H
 #define RISK_H
+#include <stdbool.h>
 
-
-const char *continent_array[] = {"Africa", "Europe", "North America", "Asia"};
-
-const char *africa_array[5] = {"Morroco", "South Africa", "Algeria", "Nigeria", "Ethiopia"};
-const char *europe_array[4] = {"Germany", "France", "Italy", "United Kingdom"};
-const char *north_array[5] = {"USA", "Canada", "Mexixo", "Cuba", "Dominican Republic"};
-const char *asia_array[4] = {"China", "India", "Japan", "North Korea"};
-
-const char **temp_array[4] = {africa_array, europe_array, north_array, asia_array};
 
 typedef struct players {
-    char *color;
+    const char *color;
     int troops;
     struct players *next;
-    //LL cards 
-    //LL Territories 
+    struct cards *deck; 
+    struct territories *countries; 
 }player;
 
 typedef struct continents {
@@ -42,11 +34,26 @@ typedef struct maps {
     continent *head;
 }map;
 
-typedef struct games {
-    struct continents *map;
-    struct players *competitors;
-} game;
-    
+
+typedef struct cards {
+    const char *country;
+    const char *value;
+    bool wild;
+}card;   
+
+
+char *talk_back(int client_fd, const char *message);
+int game_setup(int client_fd);
+int country_selection(void);
+int draw_card(void);
+int build_card(card **deck, const char **array, int a, int c); 
+int build_deck(card **deck);
+int player_initiate(int num_players, player **competitor);
+int player_teardown (player *competitor, int num_players);
+int build_continents(continent **head);
+int build_territories(territory *head, int country);
+int free_graph(continent *cont_handle);
+
 
 
 #endif
