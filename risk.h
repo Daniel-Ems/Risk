@@ -42,8 +42,8 @@ typedef struct cards {
 }card;   
 
 
-char *talk_back(int client_fd, const char *message);
-int game_setup(int client_fd);
+void talk_back(int client_fd, char **buf, const char *message, bool err);
+int game_setup(int client_fd, player **competitor);
 int country_selection(void);
 int draw_card(void);
 int build_card(card **deck, const char **array, int a, int c); 
