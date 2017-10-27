@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include <stdbool.h>
 
 #define NUM_CONTINENTS      4
 #define FULL_DECK           58
@@ -18,6 +19,7 @@
 #define NO_SZ               5
 #define AS_SZ               4
 #define MAX_PLAYERS         4
+#define MIN_PLAYERS         2
 #define ERR                 -1
 #define SUCCESS             0
 
@@ -37,11 +39,6 @@ int main(int argc, char *argv[])
     srand(time(NULL));
 
     int results; //function result for error checking
-    char *err = "<num players (2-4)>";
-    if(argc != 2) {
-        fprintf(stderr, "%s %s \n",argv[0], err);
-        return 1;
-    }
 
     struct addrinfo hints, *res;
 
@@ -63,8 +60,20 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    //Allow replay on same port
+    int yes = 1;
+    if(setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1){
+        perror("setsockopt error \n");
+        exit(1);
+    }
+    
+
     //Bind socket
-    bind(sfd, res->ai_addr, res->ai_addrlen);
+    int bind_err;
+    if((bind_err = bind(sfd, res->ai_addr, res->ai_addrlen)) < 0){
+        fprintf(stderr, "bind error %d \n", bind_err);
+        exit(1);
+    }
 
     //Once bound no longer need linked list
     freeaddrinfo(res);
@@ -75,15 +84,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "listen error %d \n", lis_err);
         exit(1);
     }
-    
-    //Allow replay on same port
-    int yes = 1;
-    if(setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1){
-        perror("setsockopt error \n");
-        exit(1);
-    }
-    
-    
+ 
     char buf[100] ; 
     struct sockaddr_storage client = {0};
     socklen_t client_len = 0;
@@ -91,37 +92,33 @@ int main(int argc, char *argv[])
     int newsd = 0;
     newsd = accept(sfd, (struct sockaddr *)&client, &client_len);
 
-    game_setup(newsd);   
-  
+    //create initial player                                                         GAME SETUP
+    player *competitor = NULL;          
+    if((results = game_setup(newsd, &competitor)) == ERR){
+            return(results);
+    }   
+
+    char *message = calloc(100, sizeof(char));
+    for(int a = 1; a < results + 1; a++){
+        sprintf(message,"output: player %d: %s", a, competitor->color);
+        send(newsd, message, 100,0);
+        memset(message, 0, 100);
+        if(a + 1 < results + 1){
+            competitor = competitor->next;
+            continue;
+        }
+        break;
+    }
+    
+    message = "quit";
+    send(newsd, message, strlen(message), 0);
+
+    free(message);
+
     close(newsd);
     close(sfd);
 
-    /* 
-    //turns string into number  -                                                   GAME SETUP
-    int num_players = strtol(argv[1], NULL, 10);
-    
-    
-    //error checking for number of arguments                                        GAME SETUP
-    if(!num_players){
-        fprintf(stderr, "%s %s \n",argv[0], err);
-        return 1;
-    }
-    
-    //error checking for appropriate number of players                              GAME SETUP
-    if(num_players > MAX_PLAYERS){
-        fprintf(stderr, "%s %s \n",argv[0], err);
-        return 1;
-    }
-
-    //error checking                                                                GAME SETUP
-    printf("num_players = %d\n", num_players);
-
-    //create initial player                                                         GAME SETUP
-    player *competitor = NULL;          
-    //If player creation fails, return
-    if((results = player_initiate(num_players, &competitor)) == ERR){
-        return(results);
-    }
+    /*
  
     //Deck of cards                                                                 GAME SETUP
     card *deck = NULL; 
@@ -149,65 +146,87 @@ int main(int argc, char *argv[])
     //TODO -> Check success
     free_graph(globe);    
     free(deck);
-    player_teardown(competitor, num_players);
-    */ 
+    */
+    player_teardown(competitor, results); 
     //Program ran successfully to completion
     return SUCCESS;
     
 }
 ////////END MAIN//////////
-char *talk_back(int client_fd, const char *message)
+
+void talk_back(int client_fd, char **buf, const char *message, bool err)
 {
-    char *buf = calloc(100, sizeof(char));
     size_t received;
     int leave = 0;
 
-    send(client_fd,  message, strlen(message), 0);
-    recv(client_fd, buf, 100, 0);
- 
     
-    return(buf);
+    send(client_fd,  message, strlen(message), 0);
+
+    /* 
+     * For the time being, the client should always send something back.
+     * However, This may change later on as the rest of the build out cont.
+     * In the mean time, bool is unnecessary but will remain. 
+     */
+
+    recv(client_fd, *buf, 100, 0);
+    
+ 
 }
 
   
-int game_setup(int client_fd)
+int game_setup(int client_fd, player **competitor)
 {
-    char *buf;
-    char *err = NULL;
+    char *buf = calloc(100, sizeof(char));
+    char *err;
     int move_on = 0;
     int result;
+    int ret_val;
+    bool is_err = false;
+    
 
     const char *message = "How many people are playing <2-4>? ";
-    const char *err_msg = "Please enter a number between <2-4> ";
-    while(move_on == 0){
-        buf = talk_back(client_fd, message);
-        printf("%s \n", buf);
+    const char *err_msg = "ERR: Please enter a number between <2-4> ";
+
+    while(move_on == 0)
+    {
+        talk_back(client_fd, &buf, message, is_err);
+        printf("%s \n", buf);                       //Error checking print statement
         result = strtol(buf, &err, 10);
-        printf("%d \n", result);
-        /*
-        if(err != NULL){
-            memset(&buf, 0, sizeof(buf));
-            err = NULL;
-            buf = talk_back(client_fd, err_msg);
+        if(*err != '\0'){
+            memset(buf, 0, sizeof(100));
+            is_err = true;
+            message = err_msg;
             continue;
         }
-        */
+        if(result > MAX_PLAYERS || result < MIN_PLAYERS){
+            memset(buf, 0, sizeof(100));
+            is_err = true;
+            message = err_msg;
+            continue;
+        }
         move_on = 1;
     }
-           
-    printf("Thank you\n%s are playing \n", buf);
-   
-    message = "quit";
-    send(client_fd, message, strlen(message), 0);
-    free(buf);
-    return 0;
-    //Number of Players 
 
-    //Country selection 
+    //If player creation fails, return
+    if((ret_val = player_initiate(result, competitor)) == ERR){
+        printf("player_initiate error\n");
+        return(ret_val);
+    }
+    /* Create the players
+     * Decide whether you are going to create nodes inside
+     * Or outside the functioni
+     */
+  
+    free(buf);
+
+    return result;   // This needs to turn into an error checking return
+
 
 }
 
-////////BEGINNING FUNCTIONS ////////// 
+/*
+ * Everything below needs to be moved to a .c file possibly game.c?
+ */
 int country_selection(void)
 {
     char buf[100];
