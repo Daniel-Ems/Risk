@@ -42,6 +42,7 @@ typedef struct cards {
 }card;   
 
 
+int find_territory(continent *head, const char *name);
 void talk_back(int client_fd, char **buf, const char *message, bool err);
 int game_setup(int client_fd, player **competitor);
 int country_selection(void);
