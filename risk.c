@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-
-=======
 //<This is the branch for Risk>
->>>>>>> risk_temp.c
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
