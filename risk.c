@@ -1,5 +1,5 @@
 //<This is the branch for Risk>
-//THis is another merge
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
