@@ -1,3 +1,4 @@
+//<This is the branch for Risk>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -27,7 +28,7 @@ const char *continent_array[] = {"Africa", "Europe", "North America", "Asia"};
 
 const char *africa_array[AF_SZ] = {"Morroco", "South Africa", "Algeria", "Nigeria", "Ethiopia"};
 const char *europe_array[EU_SZ] = {"Germany", "France", "Italy", "United Kingdom"};
-const char *north_array[NO_SZ] = {"USA", "Canada", "Mexixo", "Cuba", "Dominican Republic"};
+const char *north_array[NO_SZ] = {"USA", "Canada", "Mexico", "Cuba", "Dominican Republic"};
 const char *asia_array[AS_SZ] = {"China", "India", "Japan", "North Korea"};
 const char **temp_array[NUM_CONTINENTS] = {africa_array, europe_array, north_array, asia_array};
 
@@ -92,62 +93,60 @@ int main(int argc, char *argv[])
     int newsd = 0;
     newsd = accept(sfd, (struct sockaddr *)&client, &client_len);
 
-    //create initial player                                                         GAME SETUP
-    player *competitor = NULL;          
+    //create initial player                                                     GAME SETUP
+    player *competitor = NULL;
+    int num_players;          
     if((results = game_setup(newsd, &competitor)) == ERR){
             return(results);
     }   
+    
+    num_players = results;
 
     char *message = calloc(100, sizeof(char));
-    for(int a = 1; a < results + 1; a++){
-        sprintf(message,"output: player %d: %s", a, competitor->color);
-        send(newsd, message, 100,0);
+    for(int a = 1; a < num_players + 1; a++){
+        sprintf(message,"output: player %d: %s\n", a, competitor->color);
+        send(newsd, message, strlen(message),0);
         memset(message, 0, 100);
-        if(a + 1 < results + 1){
+        if(a + 1 < num_players + 1){
             competitor = competitor->next;
             continue;
         }
         break;
     }
     
+    free(message);
+
     message = "quit";
     send(newsd, message, strlen(message), 0);
-
-    free(message);
 
     close(newsd);
     close(sfd);
 
-    /*
- 
+/* 
     //Deck of cards                                                                 GAME SETUP
     card *deck = NULL; 
     //If deck creation fails, free necessary items and return
     if((results = build_deck(&deck)) == ERR){
-        player_teardown(competitor, num_players);
+        //player_teardown(competitor, results);
         return(results);
     }
-    
+  */ 
     //Head to graph                                                                 GAME SETUP
-    continent *globe = NULL;
-    //Build out continents and territories
     //If they fail, free necessary items and return
-    if((results = build_continents(&globe)) == ERR){
-        player_teardown(competitor, num_players);
-        free(deck);
+    continent *globe = NULL;
+    if((results = build_continents(&globe)) == ERR){ 
+    //    free(deck);
+        //player_teardown(competitor, results);
         return(results);
     }
 
-    //TODO: FINISH                                                                  GAME SETUP  
-    country_selection(); 
+    //find_territory(globe, "Mexico");
    
-                                                         
-    //FREES
-    //TODO -> Check success
+   // free(deck);
+   
+    player_teardown(competitor, num_players); 
+
     free_graph(globe);    
-    free(deck);
-    */
-    player_teardown(competitor, results); 
     //Program ran successfully to completion
     return SUCCESS;
     
@@ -193,13 +192,13 @@ int game_setup(int client_fd, player **competitor)
         printf("%s \n", buf);                       //Error checking print statement
         result = strtol(buf, &err, 10);
         if(*err != '\0'){
-            memset(buf, 0, sizeof(100));
+            memset(buf, 0, 100);
             is_err = true;
             message = err_msg;
             continue;
         }
         if(result > MAX_PLAYERS || result < MIN_PLAYERS){
-            memset(buf, 0, sizeof(100));
+            memset(buf, 0, 100);
             is_err = true;
             message = err_msg;
             continue;
@@ -212,10 +211,6 @@ int game_setup(int client_fd, player **competitor)
         printf("player_initiate error\n");
         return(ret_val);
     }
-    /* Create the players
-     * Decide whether you are going to create nodes inside
-     * Or outside the functioni
-     */
   
     free(buf);
 
@@ -227,6 +222,25 @@ int game_setup(int client_fd, player **competitor)
 /*
  * Everything below needs to be moved to a .c file possibly game.c?
  */
+
+int find_territory(continent *country, const char *name)
+{
+    territory *search = country->head;
+    int ret_val;
+    
+   while((ret_val=strncmp(name, search->name, strlen(name))) != 0) {
+        if(search->next == NULL){
+            country = country->next;
+            search = country->head;
+        }
+        else{
+            search = search->next;
+        }
+    }
+    printf("%s vs: %s\n", name, search->name);
+    return(0);
+}
+
 int country_selection(void)
 {
     char buf[100];
@@ -341,7 +355,7 @@ int player_initiate(int num_players, player **competitor)
     //build out linked list based off the number of players passed to the program
     int a = 0;
     
-    if((*competitor = malloc(sizeof(**competitor))) == NULL){
+    if((*competitor = malloc(sizeof(player))) == NULL){
         printf("malloc error inside player_initiate\n");
         return(ERR);
     }
@@ -357,18 +371,22 @@ int player_initiate(int num_players, player **competitor)
         (*competitor)->color = color_array[a];
         //assign the player the appropriate number of troops
         (*competitor)->troops = num_troops;
-        if(((*competitor)->deck = malloc(sizeof(card) * 18)) == NULL){
+        /*
+        if(((*competitor)->deck = malloc(sizeof(card))) == NULL){
             printf("error in deck malloc");
             return(ERR);
         }
 
-        if(((*competitor)->countries = malloc(sizeof(territory) * 18)) == NULL ) {
+        if(((*competitor)->countries = malloc(sizeof(territory))) == NULL ) {
             printf("error in territory malloc");
             return(ERR);
         }
-
+       */ 
         if(a + 1 < num_players){
-            (*competitor)->next = malloc(sizeof(player));
+            if(((*competitor)->next = malloc(sizeof(player))) == NULL){
+                printf("error in player malloc");
+                return(ERR);
+            }
             *competitor = (*competitor)->next;
         }
         else{
@@ -388,7 +406,7 @@ int build_continents(continent **cont_node)
 
     int ret;
 
-    if((*cont_node = malloc(sizeof(**cont_node))) == NULL){
+    if((*cont_node = malloc(sizeof(continent))) == NULL){
         printf("malloc error inside build_continents\n");
         return(ERR);
     }
@@ -404,7 +422,7 @@ int build_continents(continent **cont_node)
         ret = build_territories((*cont_node)->head, a);
 
         if((a + 1) < 4){
-            (*cont_node)->next = malloc(sizeof(territory));
+            (*cont_node)->next = malloc(sizeof(continent));
             *cont_node = (*cont_node)->next;
         }
         else{
@@ -465,8 +483,8 @@ int player_teardown(player *competitor, int num_players)
     //duplicate->free->move->repeat
     for(a; a  < (num_players); a++){
         temp = competitor->next;
-        free(competitor->countries);
-        free(competitor->deck);
+        //   free(competitor->countries);
+        //   free(competitor->deck);
         free(competitor);
         competitor = temp;
        
@@ -481,11 +499,12 @@ int free_graph(continent *cont_node)
 
     continent *cont_handle = cont_node;
     territory *ter_handle;
-
+    territory *b;
     for(int a = 0; a < NUM_CONTINENTS; a++){
-        for(territory *b = cont_node->head; b; b = ter_handle){
-            ter_handle = b->next;
-            free(b);
+        while(cont_node->head != NULL){
+            ter_handle = cont_node->head->next;
+            free(cont_node->head);
+            cont_node->head = ter_handle; 
         }
         if(a+1 < NUM_CONTINENTS){
             cont_handle = cont_node->next;
